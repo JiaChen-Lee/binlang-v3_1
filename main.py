@@ -5,7 +5,7 @@ from warmup_scheduler import GradualWarmupScheduler
 import wandb
 
 from model import create_model
-from create_component import create_dataloader, create_optimizer, create_lr_scheduler
+from scripts.create_component import create_dataloader, create_optimizer, create_lr_scheduler
 from train import train_epoch, val
 from config.cfg import hyperparameter_defaults
 

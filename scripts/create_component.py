@@ -1,13 +1,12 @@
 # Created by Jiachen Li at 2021/1/8 22:16
 import os
-import torchvision.models as models
 import torch
 import torch.utils.data as data
 # import timm
 from torchvision import transforms
 from cvtorchvision import cvtransforms
 
-from scripts.myDataset_v2 import MyDataset
+from data.myDataset import MyDataset
 
 # from efficientnet_pytorch import EfficientNet
 # from model.myResNeSt import resnest50

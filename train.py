@@ -1,9 +1,9 @@
 import torch
 import numpy as np
-from dataAug.mixup import mixup_data
-from dataAug.mixup import mixup_criterion
-from dataAug.cutmix import cutmix_data
-from dataAug.cutmix import cutmix_criterion
+from data.dataAug.mixup import mixup_data
+from data.dataAug.mixup import mixup_criterion
+from data.dataAug.cutmix import cutmix_data
+from data.dataAug.cutmix import cutmix_criterion
 
 
 def train_epoch(model, optimizer, train_dataloader, loss_func, data_aug=None):

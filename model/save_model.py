@@ -15,7 +15,7 @@ def load_img(path):
 if __name__ == '__main__':
     root = "/home/lijiachen/Projects/binlang-v2/logs/"
 
-    path = "/home/lijiachen/data/binlang-v2/dataset-v7-rename_*_5/cut/val/cut_50/channel_6_41.bmp"
+    path = "../data/dataset/cut/val/cut_50/channel_6_41.bmp"
     img = load_img(path)
     img = img.cuda()
     cut_model_path = root + "2020-12-31_230509_resnest50/resnest50_epoch_130-acc_0.9215.pt"
