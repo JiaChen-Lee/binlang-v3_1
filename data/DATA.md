@@ -1,6 +1,7 @@
 # Dataset preparation
 
-How to generate datasets and What is structure of datasets 
+- How to generate datasets?
+- What is structure of datasets?
 
 ### dataset-v7-rename_*_5
 - 在`dataset-v6-cropImg`基础上，将`*_5`类别重命名为`*_05`，以方便在`cls_map_id`时的对应<br/>
@@ -22,8 +23,7 @@ How to generate datasets and What is structure of datasets
   `--- con
   ~~~
 ### dataset-v6-cropImg
-- `step6_cropImg.py:`<br/>
-在`dataset-v5-splitTrainVal`基础上，将每张图片的两边分别裁掉450像素，裁剪之后的尺寸为380x1024
+- 在`dataset-v5-splitTrainVal`基础上，使用[step6_cropImg.py](preprocess/step6_cropImg.py)，将每张图片的两边分别裁掉450像素，裁剪之后的尺寸为380x1024
   ~~~
   ${data_ROOT}
   |--- cut
@@ -37,7 +37,7 @@ How to generate datasets and What is structure of datasets
   `--- con
   ~~~
 ### dataset-v5-splitTrainVal
-- `step5_splitTrainVal.py:`<br/>在`dataset-v4-mergeChannel`基础上，按照训练比验证3比1的比例，分成训练集和验证集。
+- 在`dataset-v4-mergeChannel`基础上，使用[step5_splitTrainVal.py](preprocess/step5_splitTrainVal.py)，按照训练比验证3比1的比例，分成训练集和验证集。
   ~~~
   ${data_ROOT}
   |--- cut
@@ -48,8 +48,8 @@ How to generate datasets and What is structure of datasets
   `--- con
   ~~~
 ### dataset-v4-mergeChannel
-- `step41_mergeChannel.py:`<br/>在`dataset-v3-addCls`基础上，将5块，10块，20块，30块和50块这五类的不同通道数据合并到一起
-- `step42_mergeProblemSamplesCls.py:`<br/>在`dataset-v3-addCls`基础上，将放反，两个距离过近，偏上（下）和卡籽这四类的不同子类及不同通道数据合并到一起
+- 在`dataset-v3-addCls`基础上，使用[step41_mergeChannel.py](preprocess/step41_mergeChannel.py)，将5块，10块，20块，30块和50块这五类的不同通道数据合并到一起
+- 在`dataset-v3-addCls`基础上，使用[step42_mergeProblemSamplesCls.py](preprocess/step42_mergeProblemSamplesCls.py)，将放反，两个距离过近，偏上（下）和卡籽这四类的不同子类及不同通道数据合并到一起
 - 以上两个代码共同生成dataset-v4-mergeChannel
   ~~~
   ${data_ROOT}
@@ -86,8 +86,7 @@ How to generate datasets and What is structure of datasets
   `--- con
   ~~~
 ### dataset-v2-whited
-- `step2_whited.py:`<br/>
-在`dataset-v1-CutCon`基础上，将图片中两侧干扰物体置白，两侧均置白450像素。生成`dataset-v2-whited`
+- 在`dataset-v1-CutCon`基础上，使用[step2_whited.py](preprocess/step2_whited.py)，将图片中两侧干扰物体置白，两侧均置白450像素。生成`dataset-v2-whited`
   ~~~
   ${data_ROOT}
   |--- cut

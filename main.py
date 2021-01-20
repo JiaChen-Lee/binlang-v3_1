@@ -8,6 +8,8 @@ from model import create_model
 from scripts.create_component import create_dataloader, create_optimizer, create_lr_scheduler
 from train import train_epoch, val
 from config.cfg import hyperparameter_defaults
+from utils.cls_map_idx import cls_map_idx
+
 
 os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
 os.environ["CUDA_VISIBLE_DEVICES"] = "0,1,2,3"
@@ -16,9 +18,7 @@ os.environ["CUDA_VISIBLE_DEVICES"] = "0,1,2,3"
 wandb.init(config=hyperparameter_defaults)
 cfg = wandb.config
 
-cls_name_list = os.listdir(os.path.join(cfg.dataset_root, "train"))
-cls_name_list.sort()
-cls_idx_map = {idx: cls_name for idx, cls_name in enumerate(cls_name_list)}
+cls_idx_map = cls_map_idx(cfg.dataset_root)
 
 # ================ logs ===================
 cur_time = time.strftime("%Y-%m-%d_%H%M%S", time.localtime())
@@ -38,9 +38,18 @@ if __name__ == '__main__':
     wandb.watch(models=model)
 
     # ================= dataloader ====================
-    train_dataloader, test_dataloader = create_dataloader(cfg.dataset_root,
-                                                          cfg.resized_size,
-                                                          cfg.batch_size)
+    train_dataloader = create_dataloader(root=cfg.dataset_root,
+                                         super_cls=cfg.super_cls,
+                                         resized_size=cfg.resized_size,
+                                         batch_size=cfg.batch_size,
+                                         load_img_with=cfg.load_img_with,
+                                         mode="train")
+    test_dataloader = create_dataloader(root=cfg.dataset_root,
+                                        super_cls=cfg.super_cls,
+                                        resized_size=cfg.resized_size,
+                                        batch_size=cfg.batch_size,
+                                        load_img_with=cfg.load_img_with,
+                                        mode="val")
 
     # ===================== optimize ========================
     optimizer = create_optimizer(cfg.optimizer,
@@ -71,8 +80,11 @@ if __name__ == '__main__':
         scheduler_warmup.step(epoch, metrics=val_acc)
 
         if cfg.save_model and (epoch + 1) % 5 == 0:
-            checkpoint_path = logs_path + "/{}_epoch_{}-acc_{:.4f}.pt".format(cfg.model, epoch + 1, val_acc)
+            checkpoint_name = "/{}_{}_epoch_{}-acc_{:.4f}.pt".format(cfg.super_cls, cfg.model, epoch + 1, val_acc)
+            checkpoint_path = logs_path + checkpoint_name
             torch.save(model, checkpoint_path)
+            # print(wandb.run.dir)
+            # wandb.save(os.path.join(wandb.run.dir, checkpoint_name))
 
         # ==================== logs with wandb ======================
         metrics = {"Train/loss": loss,

@@ -47,6 +47,14 @@ class MyDataset(Dataset):
     def public_method(self, index):
         return self.__getitem__(index)
 
+    def __load_img__(self, img_path):
+        if self.load_img_with == "OpenCV":
+            img = cv2.imread(img_path)
+            img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        else:
+            img = Image.open(img_path).convert('RGB')
+        return img
+
 
 if __name__ == '__main__':
     root = cfg.dataset["train"]

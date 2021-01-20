@@ -2,92 +2,22 @@
 import os
 import torch
 import torch.utils.data as data
-# import timm
-from torchvision import transforms
-from cvtorchvision import cvtransforms
-
+from data.transform import create_transform
 from data.myDataset import MyDataset
 
-# from efficientnet_pytorch import EfficientNet
-# from model.myResNeSt import resnest50
-# from model.myResNeSt import resnest101
-# from model.myCBAM.cbam import resnet18_cbam
-# from model.myCBAM.cbam import resnet34_cbam
-# from model.myCBAM.cbam import resnet50_cbam
 
+def create_dataloader(root, super_cls, resized_size, batch_size, load_img_with="OpenCV", mode="val"):
+    transform = create_transform(load_img_with=load_img_with, resized_size=resized_size)
 
-# def create_model(model_name, pretrained, num_classes):
-#     resnest_model = {"resnest50": resnest50,
-#                      "resnest101": resnest101}
-#     cbam_model = {"resnet18_cbam": resnet18_cbam,
-#                   "resnet34_cbam": resnet34_cbam,
-#                   "resnet50_cbam": resnet50_cbam}
-#     resnet_model = {"resnet18": models.resnet18,
-#                     "resnet34": models.resnet34,
-#                     "resnet50": models.resnet50}
-#     if model_name == "resnest50":
-#         model = resnest50(pretrained=pretrained, num_classes=num_classes)  # resnest18无预训练模型
-#         # feature = model.fc.in_features
-#         # model.fc = torch.nn.Linear(feature, num_classes, bias=True)
-#     elif model_name.startswith("efficientnet"):
-#         model = EfficientNet.from_pretrained(model_name=model_name,
-#                                              num_classes=num_classes)
-#     elif model_name == "cbam":
-#         model = resnet18_cbam(pretrained=pretrained, num_classes=num_classes)  # 学习速度很快！！！
-#         # feature = model.fc.in_features
-#         # model.fc = torch.nn.Linear(feature, num_classes, bias=True)
-#     elif model_name.startswith("vit"):
-#         model = timm.create_model(model_name, pretrained=pretrained, num_classes=num_classes)
-#     else:
-#         model = models.resnet18(pretrained=pretrained, num_classes=num_classes)  # 作为baseline对比其他模型
-#         # feature = model.fc.in_features
-#         # model.fc = torch.nn.Linear(feature, num_classes, bias=True)
-#
-#     return model
-#
+    dataset = MyDataset(root=os.path.join(root, super_cls, mode),
+                        transform=transform,
+                        load_img_with=load_img_with)
 
-def create_dataloader(root, resized_size, batch_size, load_img_with="PIL"):
-    if load_img_with == "OpenCV":
-        transform = cvtransforms.Compose([
-            cvtransforms.CenterCrop(1024),
-            cvtransforms.Resize((resized_size, resized_size)),
-            cvtransforms.RandomHorizontalFlip(),
-            cvtransforms.RandomVerticalFlip(),
-            cvtransforms.ToTensor(),
-            cvtransforms.Normalize(
-                mean=[0.485, 0.456, 0.406],
-                std=[0.229, 0.224, 0.225]
-            )
-        ])
-    else:
-        transform = transforms.Compose([
-            transforms.CenterCrop(1024),
-            transforms.Resize((resized_size, resized_size)),
-            transforms.RandomHorizontalFlip(),
-            transforms.RandomVerticalFlip(),
-            transforms.ToTensor(),
-            transforms.Normalize(
-                mean=[0.485, 0.456, 0.406],
-                std=[0.229, 0.224, 0.225]
-            )
-        ])
-
-    train_dataset = MyDataset(root=os.path.join(root, "train"),
-                              transform=transform,
-                              load_img_with=load_img_with)
-    test_dataset = MyDataset(root=os.path.join(root, "val"),
-                             transform=transform,
-                             load_img_with=load_img_with)
-
-    train_dataloader = data.DataLoader(dataset=train_dataset,
-                                       batch_size=batch_size,
-                                       shuffle=True,
-                                       num_workers=2)
-    test_dataloader = data.DataLoader(dataset=test_dataset,
-                                      batch_size=batch_size,
-                                      shuffle=False,
-                                      num_workers=2)
-    return train_dataloader, test_dataloader
+    dataloader = data.DataLoader(dataset=dataset,
+                                 batch_size=batch_size,
+                                 shuffle=True,
+                                 num_workers=2)
+    return dataloader
 
 
 def create_optimizer(optimizer_name, model, init_learning_rate, weight_decay):
@@ -102,11 +32,14 @@ def create_optimizer(optimizer_name, model, init_learning_rate, weight_decay):
                                       eps=1e-08,
                                       weight_decay=weight_decay,
                                       amsgrad=False)
-    else:
+    elif optimizer_name == "SGD":
         optimizer = torch.optim.SGD(params=model.parameters(),
                                     lr=init_learning_rate,
                                     momentum=0.9,
                                     weight_decay=weight_decay)
+    else:
+        raise Exception("Error optimizer name or this {} optimizer is not supported".format(optimizer_name))
+
     return optimizer
 
 
@@ -116,7 +49,7 @@ def create_lr_scheduler(lr_scheduler_name, optimizer, T_max=5):
                                                                T_max=T_max,
                                                                eta_min=0,
                                                                last_epoch=-1)
-    else:
+    elif lr_scheduler_name == "ReduceLROnPlateau":
         scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer=optimizer,
                                                                mode='max',
                                                                factor=0.1,
@@ -127,4 +60,7 @@ def create_lr_scheduler(lr_scheduler_name, optimizer, T_max=5):
                                                                cooldown=0,
                                                                min_lr=0,
                                                                eps=1e-08)
+    else:
+        raise Exception("Error scheduler name or this {} scheduler is not supported".format(lr_scheduler_name))
+
     return scheduler
