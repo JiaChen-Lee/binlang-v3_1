@@ -28,7 +28,7 @@ You can modify hyperparameter in [cfg.py](config/cfg.py)
 
 ## Train, Validation, Save Model
 - You can train with [main.py](main.py).
-- You can validate with [inference.py](scripts/inference.py).
+- You can validate with [inference.py](inference.py).
 - You can use [save_traced_model.py](model/save_traced_model.py) to save the model that used in LibTorch.
 
 ## Hyperparameter Optimization
@@ -43,7 +43,8 @@ You can modify hyperparameter in [cfg.py](config/cfg.py)
     
     If all the indicators have not been improved at the beginning of training. You can do
         - Lower learning rate
-
+## Notes
+- To be consistent with the transform implemented in C++, [cvtransforms](https://pypi.org/project/opencv-torchvision-transforms-yuzhiyang/) is recommended.
 ## Results
 | dataset | model  |  input_size |   optimizer |   scheduler |   learning_rate | weight_decay | batch_size |val_acc|
 |--------------|:--------:|:------:|:------:|:------:|:------:|:------:|:------:|:------:|
