@@ -1,12 +1,13 @@
 import torch
 import numpy as np
+from torch.cuda.amp import autocast
 from data.dataAug.mixup import mixup_data
 from data.dataAug.mixup import mixup_criterion
 from data.dataAug.cutmix import cutmix_data
 from data.dataAug.cutmix import cutmix_criterion
 
 
-def train_epoch(model, optimizer, train_dataloader, loss_func, data_aug=None):
+def train_epoch(rank, model, optimizer, train_dataloader, loss_func, data_aug=None, use_amp=False):
     # ================== initial =======================
     train_loss = 0.
     train_acc = 0.
@@ -14,9 +15,10 @@ def train_epoch(model, optimizer, train_dataloader, loss_func, data_aug=None):
 
     # ==================== batch =====================
     for data, label in train_dataloader:
+        optimizer.zero_grad()
         # ================= move data to GPU =================
-        data = data.cuda()
-        label = label.cuda()
+        data = data.to(rank)
+        label = label.to(rank)
 
         # =============== data augment =====================
         if data_aug == "mixup":
@@ -37,8 +39,13 @@ def train_epoch(model, optimizer, train_dataloader, loss_func, data_aug=None):
             train_acc += train_correct.item()
         else:
             # ================== loss function without data augment ===================
-            out = model(data)
-            loss = loss_func(out, label)
+            if use_amp:
+                with autocast():
+                    out = model(data)
+                    loss = loss_func(out, label)
+            else:
+                out = model(data)
+                loss = loss_func(out, label)
             train_loss += loss.item()
             pred = torch.max(out, 1)[1]
 
@@ -46,7 +53,6 @@ def train_epoch(model, optimizer, train_dataloader, loss_func, data_aug=None):
             train_acc += train_correct.item()
 
         # ================= backward ====================
-        optimizer.zero_grad()
         loss.backward()
         optimizer.step()
 
@@ -57,7 +63,7 @@ def train_epoch(model, optimizer, train_dataloader, loss_func, data_aug=None):
     return train_loss, train_acc
 
 
-def val(model, test_dataloader, num_classes):
+def val(rank, model, test_dataloader, num_classes):
     # ================== initial =======================
     model.eval()
     eval_acc = 0.
@@ -66,8 +72,8 @@ def val(model, test_dataloader, num_classes):
     total = [0 for _ in range(num_classes)]
     # ================== batch =======================
     for data, label in test_dataloader:
-        data = data.cuda()
-        label = label.cuda()
+        data = data.to(rank)
+        label = label.to(rank)
         # ==================== forward ======================
         out = model(data)
         pred = torch.max(out, 1)[1]

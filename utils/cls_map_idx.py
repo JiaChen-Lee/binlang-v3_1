@@ -1,7 +1,7 @@
 # Created by Jiachen Li at 2021/1/18 21:02
 import os
 from config.cfg import hyperparameter_defaults as cfg
-from dotdict import DotDict
+from utils.dotdict import DotDict
 
 cfg = DotDict(cfg)
 

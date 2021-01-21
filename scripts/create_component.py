@@ -6,7 +6,7 @@ from data.transform import create_transform
 from data.myDataset import MyDataset
 
 
-def create_dataloader(root, super_cls, resized_size, batch_size, load_img_with="OpenCV", mode="val"):
+def create_dataloader(root, super_cls, resized_size, batch_size, num_workers, pin_memory,load_img_with="OpenCV", mode="val"):
     transform = create_transform(load_img_with=load_img_with, resized_size=resized_size)
 
     dataset = MyDataset(root=os.path.join(root, super_cls, mode),
@@ -16,7 +16,8 @@ def create_dataloader(root, super_cls, resized_size, batch_size, load_img_with="
     dataloader = data.DataLoader(dataset=dataset,
                                  batch_size=batch_size,
                                  shuffle=True,
-                                 num_workers=2)
+                                 num_workers=num_workers,
+                                 pin_memory=pin_memory)
     return dataloader
 
 

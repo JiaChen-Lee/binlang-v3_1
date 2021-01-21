@@ -43,8 +43,8 @@ def save_model(root, path, model_name, saved_model_name):
     # #我是用四个GPU并行训练的，需要加这一句，如果是单GPU可以用上面的一句
     # model.load_state_dict(
     #     {k.replace('module.', ''): v for k, v in torch.load(model_path).items()})
-    # traced_script_module = torch.jit.trace(model.module, img)
-    traced_script_module = torch.jit.script(model.module, img)
+    traced_script_module = torch.jit.trace(model.module, img)
+    # traced_script_module = torch.jit.script(model.module, img)
     traced_script_module.save(saved_model_name)
 
 
