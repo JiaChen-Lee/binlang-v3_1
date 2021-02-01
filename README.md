@@ -1,6 +1,8 @@
 # Binlang Classification
 
 ## What's New
+### Feb 01, 2021
+- For lower latency, introduce mobilenet series model
 ### Dec 30, 2020
 - Use `wandb` instead of `tensorboard` to log.
   `wandb-sweep` is introduced to implement hyperparameter search
@@ -12,11 +14,16 @@ This repository is used to develop visual recognition algorithm for binlang clas
 You can modify hyperparameter in [cfg.py](config/cfg.py)
 
 ## Models
+* MobileNet:
+  * v3 - https://arxiv.org/abs/1905.02244
+  * v2 - https://arxiv.org/abs/1801.04381
+  * v1 - https://arxiv.org/abs/1704.04861
+* ViT - https://arxiv.org/abs/2010.11929
 * EfficientNet - https://arxiv.org/abs/1905.11946
 * ResNeSt - https://arxiv.org/abs/2004.08955
 * CBAM - https://arxiv.org/abs/1807.06521
 * SKNet - https://arxiv.org/abs/1903.06586
-* ViT - https://arxiv.org/abs/2010.11929
+* SENet - https://arxiv.org/abs/1709.01507
 * ResNet - https://arxiv.org/abs/1512.03385
 
 ## Dataset

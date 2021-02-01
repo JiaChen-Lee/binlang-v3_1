@@ -1,44 +1,40 @@
+# Created by Jiachen Li at 2021/1/22 16:38
 import time
 import os
 import torch
-import torch.distributed as dist
-import torch.multiprocessing as mp
-import torch.nn as nn
-import torch.optim as optim
-from torch.nn.parallel import DistributedDataParallel as DDP
 from warmup_scheduler import GradualWarmupScheduler
 import wandb
 
 from model import create_model
 from scripts.create_component import create_dataloader, create_optimizer, create_lr_scheduler
-from train import train_epoch, val
+from train_old import train_epoch, val
 from config.cfg import hyperparameter_defaults
 from utils.cls_map_idx import cls_map_idx
-from utils.dotdict import DotDict
-
-use_wandb = True
-cfg = DotDict(hyperparameter_defaults)
 
 os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
 os.environ["CUDA_VISIBLE_DEVICES"] = "0,1,2,3"
-os.environ["MASTER_ADDR"] = 'localhost'
-os.environ['MASTER_PORT'] = '12355'
 
+# # initialize wandb
+wandb.init(config=hyperparameter_defaults)
+cfg = wandb.config
 
-def train(rank, world_size,):
-    torch.multiprocessing.freeze_support()
-    cls_idx_map = cls_map_idx(cfg.dataset_root)
+cls_idx_map = cls_map_idx(cfg.dataset_root)
 
+# ================ logs ===================
+cur_time = time.strftime("%Y-%m-%d_%H%M%S", time.localtime())
+logs_path = "./logs/{}_{}".format(cur_time, cfg.model)
+if not os.path.exists(logs_path):
+    os.makedirs(logs_path)
+
+if __name__ == '__main__':
     # ======================= set model =======================
     model = create_model(cfg.model, cfg.pretrained, cfg.num_classes)
 
     if cfg.multi_gpu and torch.cuda.device_count() > 1:
-        dist.init_process_group(backend="nccl", rank=rank, world_size=world_size)
-        model = model.to(rank)
-        model = DDP(model, device_ids=[rank])
+        model = torch.nn.DataParallel(model)
 
-    if use_wandb:
-        wandb.watch(models=model)
+    model.cuda()
+    wandb.watch(models=model)
 
     # ================= dataloader ====================
     train_dataloader = create_dataloader(root=cfg.dataset_root,
@@ -80,9 +76,15 @@ def train(rank, world_size,):
 
         print('epoch {}'.format(epoch + 1))
         print(optimizer.state_dict()['param_groups'][0]['lr'])
+        import time
 
-        loss, acc = train_epoch(rank, model, optimizer, train_dataloader, loss_func, cfg.dataAug, use_amp=cfg.use_amp)
-        val_acc, val_cls_acc = val(rank, model, test_dataloader, cfg.num_classes)
+        start = time.time()
+        loss, acc = train_epoch(model, optimizer, train_dataloader, loss_func, cfg.dataAug, use_amp=cfg.use_amp)
+        val_acc, val_cls_acc = val(model, test_dataloader, cfg.num_classes)
+        end = time.time()
+
+        sum_time = end - start
+        print("sum_time: ", sum_time)
 
         scheduler_warmup.step(epoch, metrics=val_acc)
 
@@ -93,35 +95,11 @@ def train(rank, world_size,):
             # print(wandb.run.dir)
             # wandb.save(os.path.join(wandb.run.dir, checkpoint_name))
 
-        if use_wandb:
-            metrics = {"Train/loss": loss,
-                       "Train/acc": acc,
-                       "Test/Acc_Top1": val_acc,
-                       "lr": optimizer.state_dict()['param_groups'][0]['lr']}
-            for i in range(cfg.num_classes):
-                metrics['Test/{}_acc'.format(cls_idx_map[i])] = val_cls_acc[i]
-            wandb.log(metrics)
-
-
-def main(world_size):
-    mp.spawn(train, args=(world_size,), nprocs=world_size)
-
-
-if __name__ == '__main__':
-
-    #
-    # # # initialize wandb
-    if use_wandb:
-        wandb.init(config=hyperparameter_defaults)
-        print("init wandb")
-    #     cfg = wandb.config
-    # else:
-    #     cfg = DotDict(hyperparameter_defaults)
-
-    # ================ logs ===================
-    cur_time = time.strftime("%Y-%m-%d_%H%M%S", time.localtime())
-    logs_path = "./logs/{}_{}".format(cur_time, cfg.model)
-    if not os.path.exists(logs_path):
-        os.makedirs(logs_path)
-
-    main(4)
+        # ==================== logs with wandb ======================
+        metrics = {"Train/loss": loss,
+                   "Train/acc": acc,
+                   "Test/Acc_Top1": val_acc,
+                   "lr": optimizer.state_dict()['param_groups'][0]['lr']}
+        for i in range(cfg.num_classes):
+            metrics['Test/{}_acc'.format(cls_idx_map[i])] = val_cls_acc[i]
+        wandb.log(metrics)

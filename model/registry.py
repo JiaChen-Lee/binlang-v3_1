@@ -26,6 +26,7 @@ def register_model(fn):
     _model_entrypoints[model_name] = fn
     _model_to_module[model_name] = module_name
     _module_to_models[module_name].add(model_name)
+
     has_pretrained = False  # check if model has a pretrained url to allow filtering on this
     if hasattr(mod, 'default_cfgs') and model_name in mod.default_cfgs:
         # this will catch all models that have entrypoint matching cfg key, but miss any aliasing
@@ -33,6 +34,7 @@ def register_model(fn):
         has_pretrained = 'url' in mod.default_cfgs[model_name] and 'http' in mod.default_cfgs[model_name]['url']
     if has_pretrained:
         _model_has_pretrained.add(model_name)
+
     return fn
 
 

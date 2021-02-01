@@ -7,7 +7,6 @@ from config.cfg import hyperparameter_defaults as cfg
 from data.transform import create_transform
 from utils.dotdict import DotDict
 
-
 cfg = DotDict(cfg)
 
 
@@ -22,53 +21,53 @@ def load_img(img_path, load_img_with):
     return img
 
 
-def save_model(root, path, model_name, saved_model_name):
-    img = load_img(img_path=path, load_img_with=cfg.load_img_with)
-    transform = create_transform(load_img_with=cfg.load_img_with, resized_size=cfg.resized_size)
-    img = transform(img)
-    img = torch.unsqueeze(img, dim=0)
+def save_model(model_path, saved_model_name):
+    img = torch.randn(1, 3, 224, 224)
     img = img.cuda()
 
-    model_path = root + model_name
     model = torch.load(model_path)
-    model.set_swish(False)
     model.eval()
     model.cuda()
+    # model.module.set_swish(memory_efficient=False)
 
-    # model = EfficientNet.from_name('efficientnet-b3')
-    # model.set_swish(memory_efficient=False)
-    # num_ftrs = model._fc.in_features
-    # model._fc = nn.Linear(num_ftrs, 9)
-    # # model.load_state_dict(torch.load('Garbage/each_model/epoch_29.pth'))
-    # #我是用四个GPU并行训练的，需要加这一句，如果是单GPU可以用上面的一句
-    # model.load_state_dict(
-    #     {k.replace('module.', ''): v for k, v in torch.load(model_path).items()})
     traced_script_module = torch.jit.trace(model.module, img)
-    # traced_script_module = torch.jit.script(model.module, img)
     traced_script_module.save(saved_model_name)
+
+    # model.module.set_swish(memory_efficient=False)
+    # torch.onnx.export(model.module, dummy_input, "/home/lijiachen/Projects/binlang-v3_1/test-b0.onnx", verbose=True)
 
 
 if __name__ == '__main__':
     if cfg.super_cls == "cut":
-        img_path = "../data/dataset/cut/val/cut_50/channel_6_41.bmp"
-        root = "/home/lijiachen/Projects/binlang-v3_1/logs/2021-01-18_194450_efficientnet-b3/"
-        model_name = "efficientnet-b3_epoch_105-acc_0.9563.pt"
+        root = "/home/lijiachen/Projects/binlang-v3_1/logs/2021-01-31_195237_mobilenetv2/"
+        model_name = "cut_mobilenetv2_epoch_300-acc_0.9280.pt"
     elif cfg.super_cls == "con":
-        img_path = "../data/dataset/cut/val/con_50/channel_3_48.bmp"
-        root = "../logs/2021-01-18_212828_efficientnet-b3/"
-        model_name = "efficientnet-b3_epoch_105-acc_0.9344.pt"
+        root = "/home/lijiachen/Projects/binlang-v3_1/logs/2021-01-31_212719_mobilenetv3/"
+        model_name = "con_mobilenetv3_epoch_385-acc_0.9095.pt"
     else:
         raise Exception("Error super class name!")
     saved_model_name = "../traced_{}_{}.pt".format(cfg.super_cls, cfg.model)
-    
-    save_model(root=root, path=img_path, model_name=model_name, saved_model_name=saved_model_name)
+    model_path = root + model_name
+    save_model(model_path=model_path, saved_model_name=saved_model_name)
 
-    # path = "/home/lijiachen/data/binlang-v2/dataset-v7-rename_*_5/con/val/con_50/channel_3_48.bmp"
-    # img = load_img(path)
+    # import timm
+    #
+    # model = timm.create_model(model_name="efficientnet_b0", pretrained=cfg.pretrained, num_classes=cfg.num_classes)
+    # model.eval()
+    # # model.cuda()
+    # # model.module.set_swish(False)
+    # img = torch.rand([1,3,224,224])
+    # traced_script_module = torch.jit.trace(model, img)
+    # # traced_script_module.save(saved_model_name)
+    import geffnet
+
+    # model = geffnet.create_model(model_name="mobilenetv3_large_100",
+    #                              pretrained=True,
+    #                              num_classes=9)
+    # model.eval()
+    # model.cuda()
+    # # model.module.set_swish(False)
+    # img = torch.rand([1,3,224,224])
     # img = img.cuda()
-    # con_model_path = root + "2020-12-31_164033_resnest50/resnest50_epoch_180-acc_0.9064.pt"
-    # model = torch.load(con_model_path)
-    # traced_script_module = torch.jit.trace(model.module, img)
-    # # parallel_model = nn.DataParallel(model)
-    # # traced_script_module = torch.jit.trace(parallel_model.module, img)
-    # traced_script_module.save("/home/lijiachen/Projects/binlang-v2/traced_resnest50_model_con.pt")
+    # traced_script_module = torch.jit.trace(model, img)
+    # # traced_script_module.save(saved_model_name)
