@@ -77,6 +77,7 @@ About datasets detail, you can look [DATA.md](data/DATA.md)
 |efficientnet-b0   | 0.01 G| 4.02 M|    True  |   240x240|AdamW    |ReduceLROnPlateau| 128      |150  |90.7 |700ms  |
 |resnest50         | 5.41 G|25.45 M|    True  |   240x240|AdamW    |ReduceLROnPlateau| 128      |150  |91.8 |750ms  |
 |resnet50          | 4.12 G|23.53 M|    True  |   240x240|AdamW    |CosineAnnealingLR| 128      |200  |80.19|None   |
+
 ###Notes: 以上所有参数均为sweep搜索得到，None表示暂未测试
 
 
