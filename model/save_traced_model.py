@@ -39,11 +39,11 @@ def save_model(model_path, saved_model_name):
 
 if __name__ == '__main__':
     if cfg.super_cls == "cut":
-        root = "/home/lijiachen/Projects/binlang-v3_1/logs/2021-01-31_195237_mobilenetv2/"
-        model_name = "cut_mobilenetv2_epoch_300-acc_0.9280.pt"
+        root = "/home/lijiachen/Projects/binlang-v3_1/logs/2021-02-04_002824_mobilenet_v2/"
+        model_name = "cut_mobilenet_v2_epoch_485-acc_0.8861.pt"
     elif cfg.super_cls == "con":
-        root = "/home/lijiachen/Projects/binlang-v3_1/logs/2021-01-31_212719_mobilenetv3/"
-        model_name = "con_mobilenetv3_epoch_385-acc_0.9095.pt"
+        root = "/home/lijiachen/Projects/binlang-v3_1/logs/2021-02-03_080317_mobilenet_v2/"
+        model_name = "con_mobilenet_v2_epoch_490-acc_0.8512.pt"
     else:
         raise Exception("Error super class name!")
     saved_model_name = "../traced_{}_{}.pt".format(cfg.super_cls, cfg.model)

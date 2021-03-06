@@ -1,5 +1,5 @@
-name: efficientnet_cut
-program: main.py
+name: cut_mobilenet_v3_large_128
+program: main_old.py
 metric:
   name: Test/Acc_Top1
   goal: maximize
@@ -11,7 +11,12 @@ parameters:
   weight_decay:
     min: 0.
     max: 0.01
-
+  batch_size:
+    values:
+      - 128
+  gpu_ids:
+    values:
+      - "2,3"
 command:
   - python
   - ${program}

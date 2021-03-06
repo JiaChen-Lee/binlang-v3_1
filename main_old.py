@@ -11,12 +11,12 @@ from train_old import train_epoch, val
 from config.cfg import hyperparameter_defaults
 from utils.cls_map_idx import cls_map_idx
 
-os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
-os.environ["CUDA_VISIBLE_DEVICES"] = "0,1,2,3"
-
 # # initialize wandb
 wandb.init(config=hyperparameter_defaults)
 cfg = wandb.config
+
+os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
+os.environ["CUDA_VISIBLE_DEVICES"] = cfg.gpu_ids
 
 cls_idx_map = cls_map_idx(cfg.dataset_root)
 
@@ -74,21 +74,24 @@ if __name__ == '__main__':
     val_acc = 0
     for epoch in range(cfg.num_epochs):
 
-        print('epoch {}'.format(epoch + 1))
-        print(optimizer.state_dict()['param_groups'][0]['lr'])
+        print("Epoch {}/{}".format(epoch+1, cfg.num_epochs))
+        lr = optimizer.state_dict()['param_groups'][0]['lr']
+        print("lr: {:.6f}".format(lr))
         import time
 
         start = time.time()
-        loss, acc = train_epoch(model, optimizer, train_dataloader, loss_func, cfg.dataAug, use_amp=cfg.use_amp)
+        loss, acc = train_epoch(model, optimizer, train_dataloader, loss_func,
+                                data_aug=cfg.dataAug, use_amp=cfg.use_amp)
         val_acc, val_cls_acc = val(model, test_dataloader, cfg.num_classes)
         end = time.time()
 
         sum_time = end - start
-        print("sum_time: ", sum_time)
+        print("{:.2f}s/epoch".format(round(sum_time, 2)))
 
-        scheduler_warmup.step(epoch, metrics=val_acc)
+        # scheduler_warmup.step(epoch, metrics=val_acc)
+        scheduler_warmup.step(metrics=val_acc)
 
-        if cfg.save_model and (epoch + 1) % 5 == 0:
+        if cfg.save_model and (epoch + 1) % cfg.save_interval == 0:
             checkpoint_name = "/{}_{}_epoch_{}-acc_{:.4f}.pt".format(cfg.super_cls, cfg.model, epoch + 1, val_acc)
             checkpoint_path = logs_path + checkpoint_name
             torch.save(model, checkpoint_path)

@@ -6,8 +6,8 @@ from cvtorchvision import cvtransforms
 def create_transform(load_img_with, resized_size):
     if load_img_with == "OpenCV":
         transform = cvtransforms.Compose([
-            cvtransforms.CenterCrop(1024),
-            cvtransforms.Resize((resized_size, resized_size)),
+            # cvtransforms.CenterCrop(1024),
+            # cvtransforms.Resize((resized_size, resized_size)),
             cvtransforms.RandomHorizontalFlip(),
             cvtransforms.RandomVerticalFlip(),
             cvtransforms.ToTensor(),
@@ -18,8 +18,8 @@ def create_transform(load_img_with, resized_size):
         ])
     else:
         transform = transforms.Compose([
-            transforms.CenterCrop(1024),
-            transforms.Resize((resized_size, resized_size)),
+            # transforms.CenterCrop(1024),
+            # transforms.Resize((resized_size, resized_size)),
             transforms.RandomHorizontalFlip(),
             transforms.RandomVerticalFlip(),
             transforms.ToTensor(),

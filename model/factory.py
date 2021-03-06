@@ -17,6 +17,12 @@ def create_model(model_name,
         model = timm.create_model(model_name=model_name,
                                   pretrained=pretrained,
                                   num_classes=num_classes)
+    elif model_name.startswith("sknet"):
+        create_fn = model_entrypoint(model_name)
+        model = create_fn(num_classes=num_classes)
+    elif model_name.startswith("se_resnet"):
+        create_fn = model_entrypoint(model_name)
+        model = create_fn(num_classes=num_classes)
     elif model_name.startswith("mobilenet"):
         create_fn = model_entrypoint(model_name)
         model = create_fn(pretrained=pretrained)

@@ -1,5 +1,6 @@
 import torch
 from torch import nn
+from model.registry import register_model
 
 
 class SKConv(nn.Module):
@@ -145,6 +146,11 @@ class SKNet(nn.Module):
         # print(fea.shape)
         fea = self.classifier(fea)
         return fea
+
+
+@register_model
+def sknet(num_classes):
+    return SKNet(num_classes)
 
 
 if __name__ == '__main__':

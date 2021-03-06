@@ -47,19 +47,38 @@ About datasets detail, you can look [DATA.md](data/DATA.md)
 - From [here](https://docs.wandb.ai/sweeps), you can get how to sweep.
 
 ## Tips
-    if CUDA out of memory. You can do
+    If CUDA out of memory. You can do
         - Turn down batch size
         - Switch to a smaller model
         - Resize input image to a smaller size
     
     If all the indicators have not been improved at the beginning of training. You can do
         - Lower learning rate
+
+    Small batch sizes generally converge faster and learn better than large batch sizes?
 ## Notes
 - To be consistent with the transform implemented in C++, [cvtransforms](https://pypi.org/project/opencv-torchvision-transforms-yuzhiyang/) is recommended.
-## Results
-| dataset | model  |  input_size |   optimizer |   scheduler |   learning_rate | weight_decay | batch_size |val_acc|
-|--------------|:--------:|:------:|:------:|:------:|:------:|:------:|:------:|:------:|
-|cut  | efficientnet-b3 |300x300 |AdamW |ReduceLROnPlateau |1.572e-4 | 1.165e-3| 64 | 96.46 |
-|cut       | resnest50 |224x224 |AdamW |CosineAnnealingLR |1.14e-4 | 6.028e-3 | 128 | 92.27 |
-|con  | efficientnet-b3|300x300|AdamW |ReduceLROnPlateau |8.515e-5 | 9.883e-4 | 64 | 93.99 |
-|con       | resnest50|224x224 |AdamW |ReduceLROnPlateau|5.825e-5 | 1.134e-4 | 128 | 91.8|
+
+## Results on Cut
+| Network          | MAdds | Params|Pretrained|Input Size|Optimizer|  Schedule       |Batch Size|Epoch|Top-1|Latency|
+|------------------|:-----:|:-----:|:--------:|:--------:|:-------:|:---------------:|:--------:|:---:|:---:|:-----:|
+|mobilenet_v3_large| 0.23 G| 4.21 M|    True  |   240x240|AdamW    |CosineAnnealingLR| 128      | 700 |94.51|None   |
+|mobilenet_v2      | 0.32 G| 2.24 M|    True  |   240x240|AdamW    |CosineAnnealingLR|  32      | 700 |91.21|110ms  |
+|efficientnet-b3   | 0.05 G|10.71 M|    True  |   300x300|AdamW    |ReduceLROnPlateau| 128      | 150 |96.46|None   |
+|efficientnet-b0   | 0.01 G| 4.02 M|    True  |   240x240|AdamW    |ReduceLROnPlateau| 128      | 150 |93.75|700ms  |
+|resnest50         | 5.41 G|25.45 M|    True  |   240x240|AdamW    |CosineAnnealingLR| 128      |200  |92.27|750ms  |
+|resnet50          | 4.12 G|23.53 M|    True  |   240x240|AdamW    |CosineAnnealingLR| 128      | 200 |85.13|None   |
+## Results on Con
+| Network          | MAdds | Params|Pretrained|Input Size|Optimizer|  Schedule       |Batch Size|Epoch|Top-1|Latency|
+|------------------|:-----:|:-----:|:--------:|:--------:|:-------:|:---------------:|:--------:|:---:|:---:|:-----:|
+|mobilenet_v3_large| 0.23 G| 4.21 M|    True  |   224x224|AdamW    |CosineAnnealingLR| 128      |700  |91.31|None   |
+|mobilenet_v2      | 0.32 G| 2.24 M|    True  |   224x224|AdamW    |CosineAnnealingLR| 32       |700  |86.94|110ms  |
+|efficientnet-b3   | 0.05 G|10.71 M|    True  |   300x300|AdamW    |ReduceLROnPlateau| 128      |150  |93.99|None   |
+|efficientnet-b0   | 0.01 G| 4.02 M|    True  |   240x240|AdamW    |ReduceLROnPlateau| 128      |150  |90.7 |700ms  |
+|resnest50         | 5.41 G|25.45 M|    True  |   240x240|AdamW    |ReduceLROnPlateau| 128      |150  |91.8 |750ms  |
+|resnet50          | 4.12 G|23.53 M|    True  |   240x240|AdamW    |CosineAnnealingLR| 128      |200  |80.19|None   |
+###Notes: 以上所有参数均为sweep搜索得到，None表示暂未测试
+
+
+
+

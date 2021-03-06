@@ -16,7 +16,7 @@ from config.cfg import hyperparameter_defaults
 from utils.cls_map_idx import cls_map_idx
 from utils.dotdict import DotDict
 
-use_wandb = True
+use_wandb = False
 cfg = DotDict(hyperparameter_defaults)
 
 os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
@@ -26,6 +26,10 @@ os.environ['MASTER_PORT'] = '12355'
 
 
 def train(rank, world_size,):
+    if use_wandb and rank == 0:
+    # if use_wandb:
+        wandb.init(config=hyperparameter_defaults)
+    # cfg = wandb.config
     torch.multiprocessing.freeze_support()
     cls_idx_map = cls_map_idx(cfg.dataset_root)
 
@@ -33,11 +37,15 @@ def train(rank, world_size,):
     model = create_model(cfg.model, cfg.pretrained, cfg.num_classes)
 
     if cfg.multi_gpu and torch.cuda.device_count() > 1:
+        # torch.cuda.set_device(rank)
         dist.init_process_group(backend="nccl", rank=rank, world_size=world_size)
-        model = model.to(rank)
-        model = DDP(model, device_ids=[rank])
+        # dist.init_process_group(backend='nccl', world_size=world_size, init_method='...')
+        # model = model.to(rank)
+        # model = DDP(model.to(rank), device_ids=[rank])
+        model = DDP(model.to(rank))
 
-    if use_wandb:
+    if use_wandb and rank == 0:
+    # if use_wandb:
         wandb.watch(models=model)
 
     # ================= dataloader ====================
@@ -79,12 +87,13 @@ def train(rank, world_size,):
     for epoch in range(cfg.num_epochs):
 
         print('epoch {}'.format(epoch + 1))
-        print(optimizer.state_dict()['param_groups'][0]['lr'])
+        print("lr {:.6f}".format(optimizer.state_dict()['param_groups'][0]['lr']))
 
         loss, acc = train_epoch(rank, model, optimizer, train_dataloader, loss_func, cfg.dataAug, use_amp=cfg.use_amp)
         val_acc, val_cls_acc = val(rank, model, test_dataloader, cfg.num_classes)
 
-        scheduler_warmup.step(epoch, metrics=val_acc)
+        # scheduler_warmup.step(epoch, metrics=val_acc)
+        scheduler_warmup.step(metrics=val_acc)
 
         if cfg.save_model and (epoch + 1) % 5 == 0:
             checkpoint_name = "/{}_{}_epoch_{}-acc_{:.4f}.pt".format(cfg.super_cls, cfg.model, epoch + 1, val_acc)
@@ -93,7 +102,8 @@ def train(rank, world_size,):
             # print(wandb.run.dir)
             # wandb.save(os.path.join(wandb.run.dir, checkpoint_name))
 
-        if use_wandb:
+        if use_wandb and rank == 0:
+        # if use_wandb:
             metrics = {"Train/loss": loss,
                        "Train/acc": acc,
                        "Test/Acc_Top1": val_acc,
@@ -108,15 +118,17 @@ def main(world_size):
 
 
 if __name__ == '__main__':
-
-    #
-    # # # initialize wandb
-    if use_wandb:
-        wandb.init(config=hyperparameter_defaults)
-        print("init wandb")
-    #     cfg = wandb.config
+    # if use_wandb:
+    #     wandb.init(config=hyperparameter_defaults)
+    #     # cfg = wandb.config
     # else:
     #     cfg = DotDict(hyperparameter_defaults)
+    # if use_wandb:
+    #     wandb.init(config=hyperparameter_defaults)
+    #     print("init wandb")
+    #     cfg = wandb.config
+    # else:
+    cfg = DotDict(hyperparameter_defaults)
 
     # ================ logs ===================
     cur_time = time.strftime("%Y-%m-%d_%H%M%S", time.localtime())
@@ -125,3 +137,5 @@ if __name__ == '__main__':
         os.makedirs(logs_path)
 
     main(4)
+    # /home/lijiachen/anaconda3/envs/binlang-v3/lib/python3.7/site-packages/torch/nn/modules/module.py:795: UserWarning: Using a non-full backward hook when the forward contains multiple autograd Nodes is deprecated and will be removed in future versions. This hook will be missing some grad_input. Please use register_full_backward_hook to get the documented behavior.
+    #   warnings.warn("Using a non-full backward hook when the forward contains multiple autograd Nodes "
