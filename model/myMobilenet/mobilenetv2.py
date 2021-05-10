@@ -3,6 +3,7 @@ from torch import nn
 from torch import Tensor
 from torchvision.models.utils import load_state_dict_from_url
 from typing import Callable, Any, Optional, List
+
 from model.registry import register_model
 __all__ = ['MobileNetV2', 'mobilenet_v2']
 
@@ -193,6 +194,7 @@ class MobileNetV2(nn.Module):
 
     def forward(self, x: Tensor) -> Tensor:
         return self._forward_impl(x)
+
 
 @register_model
 def mobilenet_v2(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> MobileNetV2:

@@ -2,7 +2,7 @@
 ### Feb 13, 2021
 - Result on 
   - Model: mobilenet_v3_large 
-  - Input size: 224x224 
+  - Input size: 224x224  
   - GPU: Titan Xp 
   - Dataset: dataset-v11
     

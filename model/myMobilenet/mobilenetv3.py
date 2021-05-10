@@ -7,7 +7,7 @@ from torch.nn import functional as F
 from typing import Any, Callable, List, Optional, Sequence
 
 from torchvision.models.utils import load_state_dict_from_url
-from .mobilenetv2 import _make_divisible, ConvBNActivation
+from model.myMobilenet.mobilenetv2 import _make_divisible, ConvBNActivation
 
 from model.registry import register_model
 
@@ -268,3 +268,9 @@ def mobilenet_v3_small(pretrained: bool = False, progress: bool = True, **kwargs
     last_channel = adjust_channels(1024 // reduce_divider)  # C5
 
     return _mobilenet_v3("mobilenet_v3_small", inverted_residual_setting, last_channel, pretrained, progress, **kwargs)
+
+
+if __name__ == '__main__':
+    x = torch.randn([4, 3, 224, 224])
+    model = mobilenet_v3_large(pretrained=True)
+    y = model(x)
