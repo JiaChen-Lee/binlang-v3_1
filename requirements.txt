@@ -96,7 +96,7 @@ threadpoolctl==2.1.0
 timm==0.3.2
 toml==0.10.2
 tqdm==4.56.0
-urllib3==1.26.2
+urllib3==1.26.5
 wandb==0.10.18
 watchdog==0.10.4
 webcolors==1.11.1
