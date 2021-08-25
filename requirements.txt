@@ -86,7 +86,7 @@ subprocess32==3.5.4
 swagger-spec-validator==2.7.3
 tensorboard==2.4.0
 tensorboard-plugin-wit==1.7.0
-tensorflow==2.3.0
+tensorflow==2.5.1
 tensorflow-datasets==2.1.0
 tensorflow-estimator==2.3.0
 tensorflow-metadata==0.27.0
