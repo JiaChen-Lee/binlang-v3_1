@@ -53,7 +53,7 @@ pandas==1.2.1
 pathtools==0.1.2
 pluggy==0.13.1
 promise==2.3
-protobuf==3.14.0
+protobuf==3.18.3
 psutil==5.8.0
 ptflops==0.6.4
 py==1.10.0
