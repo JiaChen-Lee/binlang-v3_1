@@ -31,7 +31,7 @@ idna==2.10
 importlib-metadata==3.3.0
 importlib-resources==5.1.0
 iniconfig==1.1.1
-joblib==1.0.0
+joblib==1.2.0
 jsonpointer==2.0
 jsonref==0.2
 jsonschema==3.2.0
